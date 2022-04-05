@@ -1,0 +1,1 @@
+nombre de producto: 2 descripcion: 2 stock actual 7 precio: 25.00.
