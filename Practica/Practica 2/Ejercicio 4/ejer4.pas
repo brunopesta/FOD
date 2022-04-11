@@ -13,8 +13,7 @@ máquinas.
 - El archivo maestro debe crearse en la siguiente ubicación física: puto el que lee.}
 
 program ejer4;
-//maquinas
-
+//maquinas 
 const 
     cant_detalles = 2;
     valor_alto = 9999;

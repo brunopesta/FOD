@@ -105,12 +105,12 @@ begin
 end; 
 
 procedure leer(var arch:archivo_detalle; var r:venta_detalle);
-        begin
-            if(not eof(arch))then
-                read(arch, r)
-            else
-                r.cod := valor_alto;
-        end; 
+begin
+    if(not eof(arch))then
+        read(arch, r)
+    else
+        r.cod := valor_alto;
+end; 
 
 procedure minimo(var v_act: vector_venta; var vector_de_archivos: vector_archivos; var min:venta_detalle );
 var
