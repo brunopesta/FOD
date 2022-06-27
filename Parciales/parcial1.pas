@@ -1,142 +1,203 @@
-{6- Se desea modelar la información necesaria para un sistema de recuentos de casos de
-covid para el ministerio de salud de la provincia de buenos aires.
-Diariamente se reciben archivos provenientes de los distintos municipios, la información
-contenida en los mismos es la siguiente: código de localidad, código cepa, cantidad casos
-activos, cantidad de casos nuevos, cantidad de casos recuperados, cantidad de casos
-fallecidos.
+{
+    5. A partir de un siniestro ocurrido se perdieron las actas de nacimiento y fallecimientos de
+    toda la provincia de buenos aires de los últimos diez años. En pos de recuperar dicha
+    información, se deberá procesar 2 archivos por cada una de las 50 delegaciones distribuidas
+    en la provincia, un archivo de nacimientos y otro de fallecimientos y crear el archivo maestro
+    reuniendo dicha información.
 
-El ministerio cuenta con un archivo maestro con la siguiente información: código localidad,
-nombre localidad, código cepa, nombre cepa, cantidad casos activos, cantidad casos
-nuevos, cantidad recuperados y cantidad de fallecidos.
-Se debe realizar el procedimiento que permita actualizar el maestro con los detalles
-recibidos, se reciben 10 detalles. Todos los archivos están ordenados por código de
-localidad y código de cepa.
+    Los archivos detalles con nacimientos, contendrán la siguiente información: nro partida
+    nacimiento, nombre, apellido, dirección detallada (calle,nro, piso, depto, ciudad), matrícula
+    del médico, nombre y apellido de la madre, DNI madre, nombre y apellido del padre, DNI del
+    padre.
 
-Para la actualización se debe proceder de la siguiente manera:
-1. Al número de fallecidos se le suman el valor de fallecidos recibido del detalle.
-2. Idem anterior para los recuperados.
-3. Los casos activos se actualizan con el valor recibido en el detalle.
-4. Idem anterior para los casos nuevos hallados.
-Realice las declaraciones necesarias, el programa principal y los procedimientos que
-requiera para la actualización solicitada e informe cantidad de localidades con más de 50
-casos activos (las localidades pueden o no haber sido actualizadas).}
+    En cambio, los 50 archivos de fallecimientos tendrán: nro partida nacimiento, DNI, nombre y
+    apellido del fallecido, matrícula del médico que firma el deceso, fecha y hora del deceso y
+    lugar.
 
+    Realizar un programa que cree el archivo maestro a partir de toda la información de los
+    archivos detalles. Se debe almacenar en el maestro: nro partida nacimiento, nombre,
+    apellido, dirección detallada (calle,nro, piso, depto, ciudad), matrícula del médico, nombre y
+    apellido de la madre, DNI madre, nombre y apellido del padre, DNI del padre y si falleció,
+    además matrícula del médico que firma el deceso, fecha y hora del deceso y lugar.
+    Se deberá, además, listar en un archivo de texto la información recolectada de cada persona.
+    
+    Nota: Todos los archivos están ordenados por nro partida de nacimiento que es única.
+    Tenga en cuenta que no necesariamente va a fallecer en el distrito donde nació la persona y
+    además puede no haber fallecido.
+}
 program parcial1;
 
 const
     valor_alto = 9999;
-
-    cant_detalles= 10;
-
+    cant_detalle = 50;
 type
 
-    ministerio = record
-        cod_loc:integer;
-        cod_cepa:integer;
-        activos:integer;
-        nuevos:integer;
-        recuperados:integer;
-        fallecidos:integer;
+    fechas = record
+        hour:double;
+        day:integer;
+        mes:integer;
+        year:integer;
+    end;
+
+    direcciones = record
+        calle:string;
+        nro:integer;
+        piso:integer;
+        depto:integer;
+        ciudad:string;
+    end;
+    
+    r_nacimientos= record
+        nro_partida_nacimiento:integer;
+        nombre:String;
+        apellido:string;
+        direccion:direcciones;
+        matricula_medico:integer;
+        nomyapeMadre:string;
+        dni_madre:string[8];
+        nomyapePadre:string;
+        dni_padre:string[8];
+    end;
+        
+    r_fallecimientos= record    
+        nro_partida_nacimiento:integer;
+        dni:string[8];
+        nombre:String;
+        apellido:string;
+        matricula_medico:integer;
+        fecha:fechas;
     end;
 
     regM = record
-        cod_loc:integer;
-        nombre_loc:string;
-        cod_cepa:integer;
-        nombre_cepa:string;
-        cant_activos:integer;
-        cant_nuevos:integer;
-        cant_recu:integer;
-        cant_fallecidos:integer;
-        end;
+        nro_partida_nacimiento:integer;
+        nombre:String;
+        apellido:string;
+        direccion:direcciones;
+        matricula_medico:integer;
+        nomyapeMadre:string;
+        dni_madre:string[8];
+        nomyapePadre:string;
+        dni_padre:string[8];
+        fallecio:boolean;
+        matricula_medico_firma:integer;
+        fecha:fechas;
+        lugar:string;
+    end;
 
-        maestro = file of regM;
+    archivo_detalle_fallecidos = file of r_fallecimientos;
+    archivo_detalle_nacidos = file of r_nacimientos;
+    archivo_maestro = file of regM;
 
-        detalle = file of  ministerio;
+    arreglo_archivo_detalle_fallecidos = array[1..cant_detalle] of archivo_detalle_fallecidos;
+    arreglo_archivo_detalle_nacimientos = array [1..cant_detalle] of archivo_detalle_nacidos;
 
-        vec_d = array [1..cant_detalles] of detalle;
+    arreglo_registro_detalle_fallecidos = array[1..cant_detalle] of r_fallecimientos;
+    arreglo_registro_detalle_nacimientos = array[1..cant_detalle] of r_nacimientos;
 
-        vec_r = array [1..cant_detalles] of ministerio;
-
-
-    procedure leer (var d:detalle; m:ministerio );
-        begin
-            if (not eof(d)) then
-                read(d,m);
-            else
-                m.cod_loc := valor_alto;
-        end;
-
-    procedure minimo(var vecD:vec_d; var leidos:vec_r; var minimo:ministerio);
-    var
-        pos:integer;
-        i:integer;
+    procedure leerNacimiento(var archivo_detalle_nacidos; regN:r_nacimientos);
     begin
-        pos:=0;
-        minimo.cod_loc:=valor_alto;
-        for i:= 1 to cant_detalles do 
-            if (leidos[i].cod_loc < minimo.cod_loc) then begin
-                minimo := leidos[i];
+        if not(eof(archivo_detalle_nacidos)) then
+            read(archivo_detalle_fallecidos,regN)
+        else
+            regN.nro_partida_nacimiento:= valor_alto;
+    end;
+
+    procedure leerFallecmiento(var archivoF: arreglo_archivo_detalle_fallecidos; var reg_f:arreglo_registro_detalle_fallecidos);
+    begin
+        if not eof(archivoF) then
+            read(archivoF,reg_f)
+        else
+            reg_f.nro_partida_nacimiento:= valor_alto;
+    end;
+    
+    procedure minimo_fall (var vecD:arreglo_archivo_detalle_fallecidos; var leidos:arreglo_registro_detalle_fallecidos; min:r_fallecimientos);
+    var
+        pos,i:integer;
+    begin
+        min.nro_partida_nacimiento:= valor_alto;
+        for i:= 1 to cant_detalle do
+            if(min.nro_partida_nacimiento > leidos[i].nro_partida_nacimiento) then begin
+                min:= leidos[i];
                 pos:= i;
             end;
         leer(vecD[pos],leidos[pos]);
     end;
 
-
-    procedure ActualizarMaestro(var m:maestro; var vecD:vec_d):
+    procedure minimo_nac(var vecF: arreglo_archivo_detalle_nacimientos; var vecRegF: arreglo_registro_detalle_nacimientos; var  min: r_nacimientos);
     var
-        i,tot_falle,tot_recu,activos,nuevos:integer;
-        leidos:vec_r;
-        Act,min:ministerio;
-        regM:regM;
-        cant:integer;
+        pos,i:integer;
     begin
-        Reset(m);
-        for i:= 1 to cant_detalles do begin
-            Reset(vecD[i]);
-            leer(vecD[i], leidos[i]);   
+        pos:= 1;
+        for i:= 1 to cant_detalle do begin
+            if( vecRegF[i].nro_partida_nacimiento = min.nro_partida_nacimiento) then begin
+                pos:= i;
+                min:= vecRegF[i];
+            end;
         end;
-        cant:=0;
-        minimo(vecD, leidos,min);
-        
-        while (min.cod_loc <> valor_alto)do begin
-            Act.cod_loc := min.cod_loc;
-
-            while (Act.cod_loc = min.cod_loc) do begin
-                Act.cod_cepa := min.cod_cepa;
-                tot_falle:=0;
-                tot_recu:=0;
-                nuevos:=0;
-                activos:=0;
-                tot_falle := min.fallecidos;
-                tot_recu := min.recuperados;
-                activos:= min.activos;
-                nuevos:=  min.nuevos;
-                minimo(vecD,leidos,min);
-            end; 
-        if (regM.cant_activos > 50) then
-            cant := cant + 1;
-        while (Act.cod_loc <> regM.cod_loc) and (Act.cod_cepa <> regM.cod_cepa) do 
-            Read(m,regM);
-        Seek(filePos(m) - 1);
-        regM.tot_falle:= regM.tot_falle + tot_falle;
-        regM.tot_recu:= regM.tot_recu + tot_recu;
-        regM.cant_activos:= regM.cant_activos +  activos;
-        regM.cant_nuevos := regM.cant_nuevos + nuevos;    
-        Write(m, regM);
-        end;
-        close(m);
-        writeln('La cantidad de localidades con mas de 50 casos activos es ',cant);
-        for i:= 1 to cant_detalles do
-            close(vecD[i]);
+        leerNacimientos(vecF[pos],vecRegF[pos]);
     end;
 
+
+    procedure CrearMaestro(var archivoM: archivo_maestro; var archivoN:arreglo_archivo_detalle_nacimientos; var archivoF: arreglo_archivo_detalle_fallecidos);
+    var
+        min_n: r_nacimientos;
+        min_f: r_fallecimientos;
+        leidosF: arreglo_registro_detalle_fallecidos;
+        leidosN: arreglo_registro_detalle_nacimientos;
+        i:integer;
+        reg_m:regM;
+    begin
+        rewrite(archivoM);
+        for i:= 1 to cant_detalle do begin
+            Reset(archivoN[i]);
+            leerNacimiento(archivoN[i],leidosN[i]);
+            reset(archivoF[i]);
+            leerFallecmiento(archivoF[i],leidosF[i]);
+        end;
+        minimo_nac(archivoN,leidosN,min_n);
+        minimo_fall(archivoF,leidosF,min_f);
+        while(min_n.nro_partida_nacimiento <> valor_alto) do begin
+            reg_m.nro_partida_nacimiento := min_n.nro_partida_nacimiento;
+            reg_m.nombre := min_n.nombre;
+            reg_m.apellido := min_n.apellido;
+            reg_m.direccion:= min_n.direccion;
+            if(min_n.nro_partida_nacimiento = min_f.nro_partida_nacimiento) then begin
+                reg_m.fallecio:= true;
+                reg_m.fecha:= min_f.fecha;
+                reg_m.fecha:=
+            else
+                writeln('La persona no fallecio aun');
+                reg_m.fallecio:= false;
+            end;
+
+        end;
+
+            
+
+         terminara....
+        
+        for i:= 1 to cant_detalle do begin
+            close(archivoN[i]);
+            close(archivoF[i]);
+        end;
+        close(archivoM);
+    end;
+
+
+        MUY LARGO Y NI APALO NOS TOMAN ESTO PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA./
+    dfg
+
+
+//voy a hablar con mi vieja, si terminan y no estoy pasen el cod
 var
-    m:maestro;
-    vecD:vec_d;
+    arc_maestro: maestro;
+    detaVIVO: arreglo_archivo_detalle_nacimientos;
+    detaMUERTO: arreglo_archivo_detalle_fallecidos;
+    regVIVO: arreglo_registro_detalle_nacimientos;
+    regMUERTO: arreglo_registro_detalle_fallecidos;
+
 begin
-    assign(m,'maestro');
-    for i:= 1 to cant_detalles do
-        assign(vecD[i],'detalle' + i.toStirng): // La funcion toString convierte un numero entero en String.
-    ActualizarMaestro(m,vecD);
+    Assign (arc_maestro,'maestro');
+	crearMaestro (arc_maestro,detaVIVO,detaMUERTO,regVIVO,regMUERTO);
+	mostrarMaestro (arc_maestro);
 end.

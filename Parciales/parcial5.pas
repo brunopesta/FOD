@@ -56,7 +56,7 @@ type
     begin
         pos:= 1;
         min.cod:= valor_alto;
-        for i:= 1 to cant_detalles do 
+        for i:= 1 to cant_detalles do begin
             if(leidos[i].cod < min.cod) then begin
                 min:= leidos[i];
                 pos:= i;

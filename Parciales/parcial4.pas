@@ -39,7 +39,7 @@ type
     vecD = array [1..cant_detalles] of detalle;
 
     vecR = array [1..cant_detalles] of regD;
-{
+
     procedure leer(var d:detalle; regD:regD);
     begin
         if not (eof(d)) then
@@ -93,7 +93,7 @@ begin
         close(vec[i]);
     close(m);
 end;
-}
+
 var
     m:maestro;
     vec:vecD;
