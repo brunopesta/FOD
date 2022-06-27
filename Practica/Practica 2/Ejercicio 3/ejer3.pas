@@ -93,7 +93,7 @@ var
 begin
     for i := 1 to cant_detalles do begin     
         Str(i, i_Str); // convierte lo que esta en i, en una variable string en i_STR
-        assign(v[i], 'detalle'+i_Str); 
+        assign(v[i], 'detalle'+i.toString); 
         rewrite(v[i]);
         leerDetalle(v_d);      
         while (v_d.cod <> 0) do begin
@@ -117,7 +117,6 @@ var
     i: integer;
     min_pos: integer;
 begin
-    min_pos:=1;
     min.cod:=valor_alto;
     for i:=1 to cant_detalles do begin
         if(v_act[i].cod < min.cod)then begin
@@ -125,8 +124,15 @@ begin
             min_pos:= i;
         end;
     end;
-    if(min.cod <> valor_alto)then
-        leer(vector_de_archivos[min_pos], v_act[min_pos]);
+    leer(vector_de_archivos[min_pos], v_act[min_pos]);
+end;
+
+procedeure leerMaestro(var m:maestro; regM:venta);
+begin
+    if not(eof(m)) then 
+        read(m,regM)
+    else
+        regM.cod:= valor_alto
 end;
 
 procedure actualizar_maestro(var m: archivo_maestro; var vector_de_archivos: vector_archivos);
@@ -142,10 +148,12 @@ begin
     end;
     reset(m);
     minimo(v_ventas, vector_de_archivos, min);
+    leerMaestro(m,reg_m);
     while (min.cod <> valor_alto) do begin
-        read(m,reg_m);
+        
         while (min.cod <> reg_m.cod) do
-            Read(m,reg_m);
+            leerMaestro(m,reg_m);
+       
         while(min.cod = reg_m.cod) do begin
             reg_m.stock:= reg_m.stock - min.c_v;
             minimo(v_ventas, vector_de_archivos, min);

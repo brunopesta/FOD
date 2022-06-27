@@ -80,7 +80,7 @@ type
         min.cod_loc := valor_alto;
         min.cod_cepa := valor_alto;
         for i:= 1 to cant_detalles do begin
-            if(vecR[i].cod_loc < min.cod_loc) then 
+            if(vecR[i].cod_loc <= min.cod_loc) then 
                 if(vecR[i].cod_cepa < min.cod_cepa) then begin 
                     min:= vecR[i];
                     pos:= 1;
@@ -117,7 +117,7 @@ type
                 regM.cant_recuperados := regM.cant_recuperados + min.cant_recuperados;
                 minimo(vecD,leidos,min);
             end;
-            
+
             seek(m,filepos(m) - 1);
             write(m,regM);
         end;
